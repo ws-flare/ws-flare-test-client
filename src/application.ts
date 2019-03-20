@@ -13,7 +13,7 @@ export class OrchestrationApplication extends Application {
 
         // Config
         this.bind('config.nodes.connectionLimitPerNode').to(1000);
-        this.bind('config.kubernetes.testImage').to(options.kubernetes.testImage);
+        this.bind('config.job.id').to(options.config.jobId);
 
         // Remote APIS
         this.bind('api.user').to(options.apis.userApi);

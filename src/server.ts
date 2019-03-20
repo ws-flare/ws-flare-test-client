@@ -8,8 +8,11 @@ export class Server extends Context implements Server {
     @inject('amqp.conn')
     private amqpConn: Connection;
 
-    @inject('queue.job.create')
-    private createJobQueue: string;
+    @inject('queue.job.start')
+    private startTestQueue: string;
+
+    @inject('config.job.id')
+    private jobId: string;
 
     constructor(@inject(CoreBindings.APPLICATION_INSTANCE) public app?: Application) {
         super(app);
@@ -22,10 +25,14 @@ export class Server extends Context implements Server {
     async start(): Promise<void> {
         const createJobChannel = await this.amqpConn.createChannel();
 
-        await createJobChannel.assertQueue(this.createJobQueue);
+        const queue = `${this.startTestQueue}.${this.jobId}`;
 
-        await createJobChannel.consume(this.createJobQueue, async (message: ConsumeMessage) => {
+        await createJobChannel.assertQueue(queue);
+
+        await createJobChannel.consume(queue, async (message: ConsumeMessage) => {
             const parsed = JSON.parse((message).content.toString());
+            console.log('Starting test phase');
+            console.log(parsed);
         }, {noAck: true});
     }
 
