@@ -23,7 +23,7 @@
     "tslint": "lb-tslint",
     "tslint:fix": "npm run tslint -- --fix",
     "pretest": "npm run clean && npm run build",
-    "test": "cross-env USER_API=http://user.com PROJECTS_API=http://projects.com JOBS_API=http://jobs.com KUBERNETES_SERVICE_HOST=localhost KUBERNETES_SERVICE_PORT=9000 lb-mocha -t 60000 --allow-console-logs \"dist/__tests__\"",
+    "test": "cross-env USER_API=http://user.com PROJECTS_API=http://projects.com JOBS_API=http://jobs.com KUBERNETES_SERVICE_HOST=localhost KUBERNETES_SERVICE_PORT=9000 JOB_ID=job1 URI=ws://localhost:9000 TOTAL_SIMULATED_USERS=1000 lb-mocha -t 60000 --allow-console-logs \"dist/__tests__\"",
     "test:dev": "lb-mocha --allow-console-logs dist/__tests__/**/*.js && npm run posttest",
     "docker:build": "docker build -t ws-flare-graphql .",
     "docker:run": "docker run -p 3000:3000 -d ws-flare-graphql",
@@ -59,7 +59,8 @@
     "lodash": "^4.17.11",
     "superagent": "^4.1.0",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "ws": "^6.2.0"
   },
   "devDependencies": {
     "@loopback/build": "^1.3.2",
@@ -76,6 +77,7 @@
     "@types/node": "^10.11.2",
     "@types/superagent": "^4.1.1",
     "@types/uuid": "^3.4.4",
+    "@types/ws": "^6.0.1",
     "async": "^2.6.2",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",

@@ -1,5 +1,6 @@
 import { connect, Connection } from 'amqplib';
 import { retry } from 'async';
+import * as WebSocket from 'ws';
 
 let {Docker} = require('node-docker-api');
 let getRandomPort = require('random-port-as-promised');
@@ -64,4 +65,10 @@ export async function getAMQPConn(port: number): Promise<Connection> {
     process.env.AMQP_PWD = AMQP_PWD;
 
     return connect({hostname: AMQP_URL, port, username: AMQP_USER, password: AMQP_PWD});
+}
+
+export function getWsServer() {
+    return new WebSocket.Server({
+        port: 9000
+    });
 }

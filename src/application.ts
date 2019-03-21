@@ -1,6 +1,10 @@
 import { Application, ApplicationConfig } from '@loopback/core';
 import { connect } from 'amqplib';
 import { Server } from './server';
+import { NodesService } from './services/NodesService';
+import { WebsocketService } from './services/WebsocketService';
+import { TestService } from './services/TestService';
+import { createLogger, transports } from 'winston';
 
 export class OrchestrationApplication extends Application {
 
@@ -11,9 +15,24 @@ export class OrchestrationApplication extends Application {
 
         this.server(Server);
 
+        const logger = createLogger({
+            transports: [
+                new transports.Console(),
+            ],
+        });
+
+        // Logger
+        this.bind('logger').to(logger);
+
         // Config
         this.bind('config.nodes.connectionLimitPerNode').to(1000);
         this.bind('config.job.id').to(options.config.jobId);
+        this.bind('config.name').to(options.config.name);
+
+        // Task
+        this.bind('task.uri').to(options.task.uri);
+        this.bind('task.totalSimulatedUsers').to(options.task.totalSimulatedUsers);
+        this.bind('task.runTime').to(options.task.runTime);
 
         // Remote APIS
         this.bind('api.user').to(options.apis.userApi);
@@ -33,8 +52,12 @@ export class OrchestrationApplication extends Application {
         }));
 
         // Queues
-        this.bind('queue.job.create').to('job.create');
         this.bind('queue.job.start').to('job.start');
+
+        // Services
+        this.bind('services.nodes').toClass(NodesService);
+        this.bind('services.websocket').toClass(WebsocketService);
+        this.bind('services.test').toClass(TestService);
     }
 
 }

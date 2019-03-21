@@ -1,6 +1,8 @@
 import { Application, CoreBindings } from '@loopback/core';
 import { Context, inject } from '@loopback/context';
 import { Connection, ConsumeMessage } from 'amqplib';
+import { NodesService } from './services/NodesService';
+import { TestService } from './services/TestService';
 
 export class Server extends Context implements Server {
     private _listening: boolean = false;
@@ -13,6 +15,12 @@ export class Server extends Context implements Server {
 
     @inject('config.job.id')
     private jobId: string;
+
+    @inject('services.nodes')
+    private nodesService: NodesService;
+
+    @inject('services.test')
+    private testService: TestService;
 
     constructor(@inject(CoreBindings.APPLICATION_INSTANCE) public app?: Application) {
         super(app);
@@ -29,10 +37,14 @@ export class Server extends Context implements Server {
 
         await createJobChannel.assertQueue(queue);
 
+        await this.nodesService.registerNode();
+
         await createJobChannel.consume(queue, async (message: ConsumeMessage) => {
             const parsed = JSON.parse((message).content.toString());
             console.log('Starting test phase');
             console.log(parsed);
+
+            await this.testService.runTest();
         }, {noAck: true});
     }
 
