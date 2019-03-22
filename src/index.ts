@@ -1,13 +1,14 @@
 import { ApplicationConfig } from '@loopback/core';
 import { OrchestrationApplication } from './application';
 
-const {PORT, USER_API, PROJECTS_API, JOBS_API, AMQP_URL, AMQP_PORT, AMQP_USER, AMQP_PWD, JOB_ID, NODE_NAME, URI, TOTAL_SIMULATED_USERS, RUN_TIME} = process.env;
+const {PORT, USER_API, PROJECTS_API, JOBS_API, AMQP_URL, AMQP_PORT, AMQP_USER, AMQP_PWD, JOB_ID, NODE_ID, NODE_NAME, URI, TOTAL_SIMULATED_USERS, RUN_TIME} = process.env;
 
 export async function main(options: ApplicationConfig = {}): Promise<OrchestrationApplication> {
     options.port = options.port || PORT;
     options.config = {
         jobId: JOB_ID,
-        name: NODE_NAME
+        name: NODE_NAME,
+        nodeId: NODE_ID
     };
     options.task = {
         uri: URI,

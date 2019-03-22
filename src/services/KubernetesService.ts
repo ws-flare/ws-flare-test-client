@@ -7,14 +7,14 @@ export class KubernetesService {
     @inject('logger')
     private logger: Logger;
 
-    @inject('config.job.id')
-    private jobId: string;
+    @inject('config.nodeId')
+    private nodeId: string;
 
     @inject('kubernetes.client')
     private kubernetesClient: ApiRoot;
 
     async shutdown() {
         this.logger.info('Shutting down self');
-        await this.kubernetesClient.api.v1.namespaces('default').pod(`ws-flare-test-client-${this.jobId}`).delete();
+        await this.kubernetesClient.api.v1.namespaces('default').pod(`ws-flare-test-client-${this.nodeId}`).delete();
     }
 }

@@ -9,11 +9,13 @@ import { main } from '..';
 describe('Orchestration', () => {
 
     const startTestQueue = 'job.start.job1';
+    const nodeReadyQueue = 'node.ready.node1';
 
     let app: OrchestrationApplication;
     let container: Container;
     let port: number;
     let startTestChannel: Channel;
+    let nodeReadyChannel: Channel;
     let registerInterceptor: any;
     let markNodeAsNotRunning: any;
     let shutdownSelf: any;
@@ -29,7 +31,7 @@ describe('Orchestration', () => {
             .reply(200, {});
 
         shutdownSelf = nock('http://localhost:9000')
-            .intercept(/\/api\/v1\/namespaces\/default\/pods\/ws-flare-test-client-job1/g, 'DELETE')
+            .intercept(/\/api\/v1\/namespaces\/default\/pods\/ws-flare-test-client-node1/g, 'DELETE')
             .reply(200, {});
 
         wsServer = getWsServer();
@@ -42,6 +44,9 @@ describe('Orchestration', () => {
 
         const conn = await getAMQPConn(port);
         startTestChannel = await conn.createChannel();
+        nodeReadyChannel = await conn.createChannel();
+
+        await nodeReadyChannel.assertQueue(nodeReadyQueue);
 
         await startTestChannel.assertExchange(startTestQueue, 'fanout', {durable: false});
     });
@@ -63,6 +68,7 @@ describe('Orchestration', () => {
     it('should stress test websocket server', async () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
+        let nodeReady = false;
 
         wsServer.on('connection', (ws) => {
             totalConnections += 1;
@@ -71,6 +77,10 @@ describe('Orchestration', () => {
                 totalDisconnections += 1;
             });
         });
+
+        await nodeReadyChannel.consume(nodeReadyQueue, () => {
+            nodeReady = true;
+        }, {noAck: true});
 
         await new Promise(resolve => setTimeout(() => resolve(), 2000));
 
@@ -83,5 +93,6 @@ describe('Orchestration', () => {
 
         expect(markNodeAsNotRunning.isDone()).to.eql(true);
         expect(shutdownSelf.isDone()).to.eql(true);
+        expect(nodeReady).to.eql(true);
     });
 });

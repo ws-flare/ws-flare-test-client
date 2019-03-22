@@ -30,6 +30,9 @@ export class Server extends Context implements Server {
     @inject('services.kubernetes')
     private kubernetesService: KubernetesService;
 
+    @inject('queue.node.ready')
+    private nodeReadyQueue: string;
+
     constructor(@inject(CoreBindings.APPLICATION_INSTANCE) public app?: Application) {
         super(app);
     }
@@ -40,6 +43,7 @@ export class Server extends Context implements Server {
 
     async start(): Promise<void> {
         const createJobChannel = await this.amqpConn.createChannel();
+        const nodeReadyChannel = await this.amqpConn.createChannel();
 
         const queue = `${this.startTestQueue}.${this.jobId}`;
 
@@ -51,8 +55,12 @@ export class Server extends Context implements Server {
 
         const node = await this.nodesService.registerNode();
 
+        await nodeReadyChannel.assertQueue(this.nodeReadyQueue);
+
         this.logger.info('Registered node');
         this.logger.info(node.body);
+
+        await nodeReadyChannel.sendToQueue(this.nodeReadyQueue, new Buffer((JSON.stringify({ready: true}))));
 
         await createJobChannel.consume(qok.queue, async () => {
             await this.testService.runTest();

@@ -30,6 +30,7 @@ export class OrchestrationApplication extends Application {
         this.bind('config.nodes.connectionLimitPerNode').to(1000);
         this.bind('config.job.id').to(options.config.jobId);
         this.bind('config.name').to(options.config.name);
+        this.bind('config.nodeId').to(options.config.nodeId);
 
         // Task
         this.bind('task.uri').to(options.task.uri);
@@ -55,6 +56,7 @@ export class OrchestrationApplication extends Application {
 
         // Queues
         this.bind('queue.job.start').to('job.start');
+        this.bind('queue.node.ready').to(`node.ready.${options.config.nodeId}`);
 
         // Services
         this.bind('services.nodes').toClass(NodesService);
