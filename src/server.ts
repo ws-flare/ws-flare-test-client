@@ -3,9 +3,13 @@ import { Context, inject } from '@loopback/context';
 import { Connection } from 'amqplib';
 import { NodesService } from './services/NodesService';
 import { TestService } from './services/TestService';
+import { Logger } from 'winston';
 
 export class Server extends Context implements Server {
     private _listening: boolean = false;
+
+    @inject('logger')
+    private logger: Logger;
 
     @inject('amqp.conn')
     private amqpConn: Connection;
@@ -41,10 +45,15 @@ export class Server extends Context implements Server {
 
         await createJobChannel.bindQueue(qok.queue, queue, '');
 
-        await this.nodesService.registerNode();
+        const node = await this.nodesService.registerNode();
+
+        this.logger.info('Registered node');
+        this.logger.info(node.body);
 
         await createJobChannel.consume(qok.queue, async () => {
             await this.testService.runTest();
+
+            await this.nodesService.markNodeAsNotRunning(node.body);
         }, {noAck: true});
     }
 

@@ -15,12 +15,17 @@ describe('Orchestration', () => {
     let port: number;
     let startTestChannel: Channel;
     let registerInterceptor: any;
+    let markNodeAsNotRunning: any;
     let wsServer: WebSocket.Server;
 
     beforeEach(async () => {
         registerInterceptor = nock(apis.jobsApi)
             .intercept('/nodes', 'POST')
-            .reply(200, {status: {}});
+            .reply(200, {id: 'node1'});
+
+        markNodeAsNotRunning = nock(apis.jobsApi)
+            .intercept('/nodes/node1', 'PATCH')
+            .reply(200, {});
 
         wsServer = getWsServer();
 
@@ -68,5 +73,7 @@ describe('Orchestration', () => {
 
         expect(totalConnections).to.equal(1000);
         expect(totalDisconnections).to.equal(1000);
+
+        expect(markNodeAsNotRunning.isDone()).to.eql(true);
     });
 });
