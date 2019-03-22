@@ -1,6 +1,6 @@
 import { Application, CoreBindings } from '@loopback/core';
 import { Context, inject } from '@loopback/context';
-import { Connection, ConsumeMessage } from 'amqplib';
+import { Connection } from 'amqplib';
 import { NodesService } from './services/NodesService';
 import { TestService } from './services/TestService';
 
@@ -35,15 +35,15 @@ export class Server extends Context implements Server {
 
         const queue = `${this.startTestQueue}.${this.jobId}`;
 
-        await createJobChannel.assertQueue(queue);
+        const qok: any = await createJobChannel.assertExchange(queue, 'fanout', {durable: false});
+
+        await createJobChannel.assertQueue('', {exclusive: true});
+
+        await createJobChannel.bindQueue(qok.queue, queue, '');
 
         await this.nodesService.registerNode();
 
-        await createJobChannel.consume(queue, async (message: ConsumeMessage) => {
-            const parsed = JSON.parse((message).content.toString());
-            console.log('Starting test phase');
-            console.log(parsed);
-
+        await createJobChannel.consume(qok.queue, async () => {
             await this.testService.runTest();
         }, {noAck: true});
     }

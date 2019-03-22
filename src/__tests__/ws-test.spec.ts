@@ -30,7 +30,8 @@ describe('Orchestration', () => {
 
         const conn = await getAMQPConn(port);
         startTestChannel = await conn.createChannel();
-        await startTestChannel.assertQueue(startTestQueue);
+
+        await startTestChannel.assertExchange(startTestQueue, 'fanout', {durable: false});
     });
 
     afterEach(async () => {
@@ -61,7 +62,7 @@ describe('Orchestration', () => {
 
         await new Promise(resolve => setTimeout(() => resolve(), 2000));
 
-        await startTestChannel.sendToQueue(startTestQueue, new Buffer((JSON.stringify({start: true}))));
+        await startTestChannel.publish(startTestQueue, '', new Buffer((JSON.stringify({start: true}))));
 
         await new Promise(resolve => setTimeout(() => resolve(), 5000));
 
