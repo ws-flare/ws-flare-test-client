@@ -1,6 +1,8 @@
 import { connect, Connection } from 'amqplib';
 import { retry } from 'async';
 import * as WebSocket from 'ws';
+import { readFileSync } from "fs";
+import * as mock from 'mock-fs';
 
 let {Docker} = require('node-docker-api');
 let getRandomPort = require('random-port-as-promised');
@@ -69,6 +71,41 @@ export async function getAMQPConn(port: number): Promise<Connection> {
 
 export function getWsServer() {
     return new WebSocket.Server({
-        port: 9000
+        port: 9001
+    });
+}
+
+export function setupK8sConfig() {
+    mock({
+        '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt': 'my-ca',
+        '/var/run/secrets/kubernetes.io/serviceaccount/token': 'my-token',
+        '/var/run/secrets/kubernetes.io/serviceaccount/namespace': 'my-namespace',
+        'node_modules/kubernetes-client/lib/specs/swagger-1.10.json.gz': readFileSync('./node_modules/kubernetes-client/lib/specs/swagger-1.10.json.gz'),
+        'node_modules/winston/lib/winston/transports/console.js': readFileSync('./node_modules/winston/lib/winston/transports/console.js'),
+        'node_modules/readable-stream/lib': {
+            '_stream_duplex.js': readFileSync('./node_modules/readable-stream/lib/_stream_duplex.js'),
+            '_stream_readable.js': readFileSync('./node_modules/readable-stream/lib/_stream_readable.js')
+        },
+        'node_modules/readable-stream/node_modules': {},
+        'node_modules/readable-stream/node_modules/isarray': {
+            'index.js': readFileSync('./node_modules/readable-stream/node_modules/isarray/index.js')
+        },
+        'node_modules/readable-stream/lib/internal/streams': {
+            'BufferList.js': readFileSync('node_modules/readable-stream/lib/internal/streams/BufferList.js')
+        },
+        'node_modules/for-own': {
+            'index.js': readFileSync('./node_modules/for-own/index.js')
+        },
+        'node_modules/shallow-clone': {
+            'index.js': readFileSync('./node_modules/shallow-clone/index.js'),
+            'utils.js': readFileSync('./node_modules/shallow-clone/utils.js'),
+        },
+        'node_modules/shallow-clone/node_modules': {},
+        'node_modules/shallow-clone/node_modules/lazy-cache': {
+            'index.js': readFileSync('./node_modules/shallow-clone/node_modules/lazy-cache/index.js')
+        },
+        'node_modules/shallow-clone/node_modules/kind-of': {
+            'index.js': readFileSync('./node_modules/shallow-clone/node_modules/kind-of/index.js')
+        }
     });
 }

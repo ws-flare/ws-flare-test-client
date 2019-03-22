@@ -4,6 +4,7 @@ import { Connection } from 'amqplib';
 import { NodesService } from './services/NodesService';
 import { TestService } from './services/TestService';
 import { Logger } from 'winston';
+import { KubernetesService } from './services/KubernetesService';
 
 export class Server extends Context implements Server {
     private _listening: boolean = false;
@@ -25,6 +26,9 @@ export class Server extends Context implements Server {
 
     @inject('services.test')
     private testService: TestService;
+
+    @inject('services.kubernetes')
+    private kubernetesService: KubernetesService;
 
     constructor(@inject(CoreBindings.APPLICATION_INSTANCE) public app?: Application) {
         super(app);
@@ -54,6 +58,8 @@ export class Server extends Context implements Server {
             await this.testService.runTest();
 
             await this.nodesService.markNodeAsNotRunning(node.body);
+
+            await this.kubernetesService.shutdown();
         }, {noAck: true});
     }
 

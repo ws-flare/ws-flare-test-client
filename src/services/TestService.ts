@@ -14,10 +14,24 @@ export class TestService {
     @inject('task.totalSimulatedUsers')
     private totalSimulatedUsers: number;
 
+    @inject('task.runTime')
+    private runTime: number;
+
     async runTest() {
         this.logger.info('Running test');
+        const webSockets: WebSocket[] = await this.startConnections();
 
-        const webSockets: WebSocket[] = await new Promise((resolve) => {
+        this.logger.info(`Waiting for ${this.runTime} seconds`);
+        await this.waitForTimeout();
+
+        this.logger.info('Shutting down sockets');
+        await this.shutdownConnections(webSockets);
+
+        this.logger.info('All sockets have been shut down');
+    }
+
+    private async startConnections(): Promise<WebSocket[]> {
+        return await new Promise((resolve) => {
 
             this.logger.info(`Simulating ${this.totalSimulatedUsers} users`);
 
@@ -30,16 +44,20 @@ export class TestService {
                 resolve(sockets);
             });
         });
+    }
 
-        this.logger.info('Shutting down sockets');
-
+    private async shutdownConnections(webSockets: WebSocket[]) {
         await new Promise((resolve) => {
             timesLimit(webSockets.length, 50, (n, next) => {
-                webSockets[n].close();
+                if (webSockets[n]) {
+                    webSockets[n].close();
+                }
                 next();
             }, () => resolve());
         });
+    }
 
-        this.logger.info('All sockets have been shut down');
+    private async waitForTimeout() {
+        await new Promise(resolve => setTimeout(() => resolve(), this.runTime))
     }
 }

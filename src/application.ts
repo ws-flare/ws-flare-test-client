@@ -1,10 +1,12 @@
 import { Application, ApplicationConfig } from '@loopback/core';
+import { Client1_10, config } from 'kubernetes-client';
 import { connect } from 'amqplib';
 import { Server } from './server';
 import { NodesService } from './services/NodesService';
 import { WebsocketService } from './services/WebsocketService';
 import { TestService } from './services/TestService';
 import { createLogger, transports } from 'winston';
+import { KubernetesService } from './services/KubernetesService';
 
 export class OrchestrationApplication extends Application {
 
@@ -32,7 +34,7 @@ export class OrchestrationApplication extends Application {
         // Task
         this.bind('task.uri').to(options.task.uri);
         this.bind('task.totalSimulatedUsers').to(options.task.totalSimulatedUsers);
-        this.bind('task.runTime').to(options.task.runTime);
+        this.bind('task.runTime').to(options.task.runTime * 1000);
 
         // Remote APIS
         this.bind('api.user').to(options.apis.userApi);
@@ -58,6 +60,10 @@ export class OrchestrationApplication extends Application {
         this.bind('services.nodes').toClass(NodesService);
         this.bind('services.websocket').toClass(WebsocketService);
         this.bind('services.test').toClass(TestService);
+        this.bind('services.kubernetes').toClass(KubernetesService);
+
+        // Kubernetes
+        this.bind('kubernetes.client').to(new Client1_10({config: config.getInCluster()}));
     }
 
 }

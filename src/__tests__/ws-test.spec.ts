@@ -1,5 +1,5 @@
 import { Channel } from 'amqplib';
-import { apis, Container, getAMQPConn, getWsServer, startMqContainer } from './test-helpers';
+import { apis, Container, getAMQPConn, getWsServer, setupK8sConfig, startMqContainer } from './test-helpers';
 import * as nock from 'nock';
 import { expect } from 'chai';
 import * as WebSocket from 'ws';
@@ -16,6 +16,7 @@ describe('Orchestration', () => {
     let startTestChannel: Channel;
     let registerInterceptor: any;
     let markNodeAsNotRunning: any;
+    let shutdownSelf: any;
     let wsServer: WebSocket.Server;
 
     beforeEach(async () => {
@@ -27,9 +28,15 @@ describe('Orchestration', () => {
             .intercept('/nodes/node1', 'PATCH')
             .reply(200, {});
 
+        shutdownSelf = nock('http://localhost:9000')
+            .intercept(/\/api\/v1\/namespaces\/default\/pods\/ws-flare-test-client-job1/g, 'DELETE')
+            .reply(200, {});
+
         wsServer = getWsServer();
 
         ({container, port} = await startMqContainer());
+
+        setupK8sConfig();
 
         app = await main({amqp: {port}});
 
@@ -75,5 +82,6 @@ describe('Orchestration', () => {
         expect(totalDisconnections).to.equal(1000);
 
         expect(markNodeAsNotRunning.isDone()).to.eql(true);
+        expect(shutdownSelf.isDone()).to.eql(true);
     });
 });
