@@ -63,9 +63,9 @@ export class Server extends Context implements Server {
         await nodeReadyChannel.sendToQueue(this.nodeReadyQueue, new Buffer((JSON.stringify({ready: true}))));
 
         await createJobChannel.consume(qok.queue, async () => {
-            await this.testService.runTest();
+            const {successful, failed, dropped} = await this.testService.runTest();
 
-            await this.nodesService.markNodeAsNotRunning(node.body);
+            await this.nodesService.saveTestResults(node.body, successful, failed, dropped);
 
             await this.kubernetesService.shutdown();
         }, {noAck: true});

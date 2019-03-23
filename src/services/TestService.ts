@@ -17,31 +17,51 @@ export class TestService {
     @inject('task.runTime')
     private runTime: number;
 
-    async runTest() {
+    async runTest(): Promise<{ successful: number, failed: number, dropped: number }> {
         this.logger.info('Running test');
-        const webSockets: WebSocket[] = await this.startConnections();
+        const {sockets, successful, failed, dropped} = await this.startConnections();
 
-        this.logger.info(`Waiting for ${this.runTime} seconds`);
-        await this.waitForTimeout();
-
+        this.logger.info(`Total successful: ${successful}`);
+        this.logger.info(`Total successful: ${failed}`);
+        this.logger.info(`Total successful: ${dropped}`);
         this.logger.info('Shutting down sockets');
-        await this.shutdownConnections(webSockets);
+        await this.shutdownConnections(sockets);
 
         this.logger.info('All sockets have been shut down');
+
+        return {successful, failed, dropped};
     }
 
-    private async startConnections(): Promise<WebSocket[]> {
+    private async startConnections(): Promise<{ sockets: WebSocket[], successful: number, failed: number, dropped: number }> {
+
+        let successful = 0;
+        let failed = 0;
+        let dropped = 0;
+
         return await new Promise((resolve) => {
 
             this.logger.info(`Simulating ${this.totalSimulatedUsers} users`);
 
             timesLimit(this.totalSimulatedUsers, 50, (n, next) => {
                 this.websocketService.createConnection()
-                    .then(ws => next(null, ws))
-                    .catch(err => next(err))
+                    .then((ws: any) => {
+                        successful += 1;
+
+                        ws.on('close', () => {
+                            dropped += 1;
+                            successful -= 1;
+                        });
+
+                        next(null, ws)
+                    })
+                    .catch(err => {
+                        failed += 1;
+                        next(err)
+                    });
             }, (err, sockets: WebSocket[]) => {
                 this.logger.info('All sockets have connected');
-                resolve(sockets);
+                this.logger.info(`Waiting for ${this.runTime} seconds`);
+                this.waitForTimeout().then(() => resolve({sockets, successful, failed, dropped}));
             });
         });
     }

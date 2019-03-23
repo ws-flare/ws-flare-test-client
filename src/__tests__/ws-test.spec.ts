@@ -17,7 +17,7 @@ describe('Orchestration', () => {
     let startTestChannel: Channel;
     let nodeReadyChannel: Channel;
     let registerInterceptor: any;
-    let markNodeAsNotRunning: any;
+    let saveTestResults: any;
     let shutdownSelf: any;
     let wsServer: WebSocket.Server;
 
@@ -26,8 +26,14 @@ describe('Orchestration', () => {
             .intercept('/nodes', 'POST')
             .reply(200, {id: 'node1'});
 
-        markNodeAsNotRunning = nock(apis.jobsApi)
-            .intercept('/nodes/node1', 'PATCH')
+        saveTestResults = nock(apis.jobsApi)
+            .intercept('/nodes/node1', 'PATCH', {
+                id: 'node1',
+                running: false,
+                totalSuccessfulConnections: 1000,
+                totalFailedConnections: 0,
+                totalDroppedConnections: 0
+            })
             .reply(200, {});
 
         shutdownSelf = nock('http://localhost:9000')
@@ -91,7 +97,7 @@ describe('Orchestration', () => {
         expect(totalConnections).to.equal(1000);
         expect(totalDisconnections).to.equal(1000);
 
-        expect(markNodeAsNotRunning.isDone()).to.eql(true);
+        expect(saveTestResults.isDone()).to.eql(true);
         expect(shutdownSelf.isDone()).to.eql(true);
         expect(nodeReady).to.eql(true);
     });

@@ -17,7 +17,13 @@ export class NodesService {
         return await post(`${this.jobsApi}/nodes`).send({jobId: this.jobId, name: this.name, running: true});
     }
 
-    async markNodeAsNotRunning(node: Node) {
-        await patch(`${this.jobsApi}/nodes/${node.id}`).send({...node, running: false});
+    async saveTestResults(node: Node, successful: number, failed: number, dropped: number) {
+        await patch(`${this.jobsApi}/nodes/${node.id}`).send({
+            ...node,
+            running: false,
+            totalSuccessfulConnections: successful,
+            totalFailedConnections: failed,
+            totalDroppedConnections: dropped
+        });
     }
 }
