@@ -33,7 +33,10 @@ export class NodesService {
                     totalSuccessfulConnections: successful,
                     totalFailedConnections: failed,
                     totalDroppedConnections: dropped
-                }).then(() => done());
+                })
+                    .then(() => done())
+                    .catch((err) => done(err));
+
             }, () => resolve());
         });
     }
