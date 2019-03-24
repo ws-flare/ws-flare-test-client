@@ -14,4 +14,4 @@ RUN apk add nodejs-lts
 
 COPY --from=build /app .
 
-CMD ["node", "."]
+CMD ["node", ".", "–nouse-idle-notification", "–max-old-space-size=8192", "–max-new-space-size=2048"]
