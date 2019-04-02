@@ -1,14 +1,11 @@
-import { inject } from '@loopback/core';
 import * as WebSocket from 'ws';
+import { Script } from '../models/script.model';
 
 export class WebsocketService {
 
-    @inject('task.uri')
-    private uri: string;
-
-    async createConnection() {
+    async createConnection(script: Script) {
         return new Promise((resolve, reject) => {
-            const ws = new WebSocket(this.uri);
+            const ws = new WebSocket(script.target);
 
             ws.on('open', () => {
                 resolve(ws);

@@ -31,11 +31,7 @@ export class OrchestrationApplication extends Application {
         this.bind('config.job.id').to(options.config.jobId);
         this.bind('config.name').to(options.config.name);
         this.bind('config.nodeId').to(options.config.nodeId);
-
-        // Task
-        this.bind('task.uri').to(options.task.uri);
-        this.bind('task.totalSimulatedUsers').to(options.task.totalSimulatedUsers);
-        this.bind('task.runTime').to(options.task.runTime * 1000);
+        this.bind('config.scriptIndex').to(options.config.scriptIndex);
 
         // Remote APIS
         this.bind('api.user').to(options.apis.userApi);
@@ -57,6 +53,7 @@ export class OrchestrationApplication extends Application {
         // Queues
         this.bind('queue.job.start').to('job.start');
         this.bind('queue.node.ready').to(`node.ready.${options.config.nodeId}`);
+        this.bind('queue.node.complete').to(`node.complete.${options.config.jobId}`);
 
         // Services
         this.bind('services.nodes').toClass(NodesService);

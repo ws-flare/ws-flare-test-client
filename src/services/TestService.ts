@@ -2,6 +2,7 @@ import { inject } from '@loopback/core';
 import { WebsocketService } from './WebsocketService';
 import { Logger } from 'winston';
 import { timesLimit } from 'async';
+import { Script } from '../models/script.model';
 
 export class TestService {
 
@@ -11,15 +12,12 @@ export class TestService {
     @inject('services.websocket')
     private websocketService: WebsocketService;
 
-    @inject('task.totalSimulatedUsers')
-    private totalSimulatedUsers: number;
+    async runTest(script: Script): Promise<{ successful: number, failed: number, dropped: number }> {
+        this.logger.info('Waiting for start timeout');
+        await this.waitForTimeout(script.start);
 
-    @inject('task.runTime')
-    private runTime: number;
-
-    async runTest(): Promise<{ successful: number, failed: number, dropped: number }> {
         this.logger.info('Running test');
-        const {sockets, successful, failed, dropped} = await this.startConnections();
+        const {sockets, successful, failed, dropped} = await this.startConnections(script);
 
         this.logger.info(`Total successful: ${successful}`);
         this.logger.info(`Total successful: ${failed}`);
@@ -32,7 +30,8 @@ export class TestService {
         return {successful, failed, dropped};
     }
 
-    private async startConnections(): Promise<{ sockets: WebSocket[], successful: number, failed: number, dropped: number }> {
+    private async startConnections(script: Script):
+        Promise<{ sockets: WebSocket[], successful: number, failed: number, dropped: number }> {
 
         let successful = 0;
         let failed = 0;
@@ -40,10 +39,10 @@ export class TestService {
 
         return await new Promise((resolve) => {
 
-            this.logger.info(`Simulating ${this.totalSimulatedUsers} users`);
+            this.logger.info(`Simulating ${script.totalSimulators} users`);
 
-            timesLimit(this.totalSimulatedUsers, 50, (n, next) => {
-                this.websocketService.createConnection()
+            timesLimit(script.totalSimulators, 50, (n, next) => {
+                this.websocketService.createConnection(script)
                     .then((ws: any) => {
                         successful += 1;
 
@@ -60,8 +59,8 @@ export class TestService {
                     });
             }, (err, sockets: WebSocket[]) => {
                 this.logger.info('All sockets have connected');
-                this.logger.info(`Waiting for ${this.runTime} seconds`);
-                this.waitForTimeout().then(() => resolve({sockets, successful, failed, dropped}));
+                this.logger.info(`Waiting for ${script.timeout} seconds`);
+                this.waitForTimeout(script.timeout).then(() => resolve({sockets, successful, failed, dropped}));
             });
         });
     }
@@ -77,7 +76,7 @@ export class TestService {
         });
     }
 
-    private async waitForTimeout() {
-        await new Promise(resolve => setTimeout(() => resolve(), this.runTime))
+    private async waitForTimeout(timeout: number) {
+        await new Promise(resolve => setTimeout(() => resolve(), timeout))
     }
 }

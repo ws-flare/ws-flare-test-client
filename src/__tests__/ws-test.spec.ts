@@ -10,12 +10,14 @@ describe('Orchestration', () => {
 
     const startTestQueue = 'job.start.job1';
     const nodeReadyQueue = 'node.ready.node1';
+    const nodeCompleteQueue = 'node.complete.job1';
 
     let app: OrchestrationApplication;
     let container: Container;
     let port: number;
     let startTestChannel: Channel;
     let nodeReadyChannel: Channel;
+    let nodeCompleteChannel: Channel;
     let registerInterceptor: any;
     let saveTestResults: any;
     let shutdownSelf: any;
@@ -51,8 +53,10 @@ describe('Orchestration', () => {
         const conn = await getAMQPConn(port);
         startTestChannel = await conn.createChannel();
         nodeReadyChannel = await conn.createChannel();
+        nodeCompleteChannel = await conn.createChannel();
 
         await nodeReadyChannel.assertQueue(nodeReadyQueue);
+        await nodeCompleteChannel.assertQueue(nodeCompleteQueue);
 
         await startTestChannel.assertExchange(startTestQueue, 'fanout', {durable: false});
     });
@@ -75,6 +79,7 @@ describe('Orchestration', () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
         let nodeReady = false;
+        let nodeComplete = false;
 
         wsServer.on('connection', (ws) => {
             totalConnections += 1;
@@ -88,9 +93,28 @@ describe('Orchestration', () => {
             nodeReady = true;
         }, {noAck: true});
 
+        await nodeCompleteChannel.consume(nodeCompleteQueue, () => {
+            nodeComplete = true;
+        }, {noAck: true});
+
         await new Promise(resolve => setTimeout(() => resolve(), 2000));
 
-        await startTestChannel.publish(startTestQueue, '', new Buffer((JSON.stringify({start: true}))));
+        await startTestChannel.publish(startTestQueue, '', new Buffer((JSON.stringify({
+            start: true, scripts: [
+                {
+                    target: 'ws://localhost',
+                    start: 0,
+                    totalSimulators: 1000,
+                    timeout: 30
+                },
+                {
+                    target: 'ws://localhost:9001',
+                    start: 0,
+                    totalSimulators: 1000,
+                    timeout: 1
+                }
+            ],
+        }))));
 
         await new Promise(resolve => setTimeout(() => resolve(), 5000));
 
@@ -100,5 +124,6 @@ describe('Orchestration', () => {
         expect(saveTestResults.isDone()).to.eql(true);
         expect(shutdownSelf.isDone()).to.eql(true);
         expect(nodeReady).to.eql(true);
+        expect(nodeComplete).to.eql(true);
     });
 });

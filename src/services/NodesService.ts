@@ -3,6 +3,7 @@ import { inject } from '@loopback/context';
 import { Node } from '../models/node.model';
 import { retry } from 'async';
 import { Logger } from 'winston';
+import { Connection } from 'amqplib';
 
 export class NodesService {
 
@@ -17,6 +18,12 @@ export class NodesService {
 
     @inject('config.name')
     private name: string;
+
+    @inject('queue.node.complete')
+    private nodeCompleteQueue: string;
+
+    @inject('amqp.conn')
+    private amqpConn: Connection;
 
     async registerNode(): Promise<any> {
         return await post(`${this.jobsApi}/nodes`).send({jobId: this.jobId, name: this.name, running: true});
@@ -39,5 +46,15 @@ export class NodesService {
 
             }, () => resolve());
         });
+    }
+
+    async sendTestCompleteMessage() {
+        const nodeCompleteChannel = await this.amqpConn.createChannel();
+
+        await nodeCompleteChannel.assertQueue(this.nodeCompleteQueue);
+
+        await nodeCompleteChannel.sendToQueue(this.nodeCompleteQueue, new Buffer((JSON.stringify({done: true}))));
+
+        await nodeCompleteChannel.close();
     }
 }

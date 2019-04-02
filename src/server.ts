@@ -1,6 +1,6 @@
 import { Application, CoreBindings } from '@loopback/core';
 import { Context, inject } from '@loopback/context';
-import { Connection } from 'amqplib';
+import { Connection, ConsumeMessage } from 'amqplib';
 import { NodesService } from './services/NodesService';
 import { TestService } from './services/TestService';
 import { Logger } from 'winston';
@@ -33,6 +33,9 @@ export class Server extends Context implements Server {
     @inject('queue.node.ready')
     private nodeReadyQueue: string;
 
+    @inject('config.scriptIndex')
+    private scriptIndex: string;
+
     constructor(@inject(CoreBindings.APPLICATION_INSTANCE) public app?: Application) {
         super(app);
     }
@@ -42,16 +45,16 @@ export class Server extends Context implements Server {
     }
 
     async start(): Promise<void> {
-        const createJobChannel = await this.amqpConn.createChannel();
+        const startTestChannel = await this.amqpConn.createChannel();
         const nodeReadyChannel = await this.amqpConn.createChannel();
 
         const queue = `${this.startTestQueue}.${this.jobId}`;
 
-        const qok: any = await createJobChannel.assertExchange(queue, 'fanout', {durable: false});
+        const qok: any = await startTestChannel.assertExchange(queue, 'fanout', {durable: false});
 
-        await createJobChannel.assertQueue('', {exclusive: true});
+        await startTestChannel.assertQueue('', {exclusive: true});
 
-        await createJobChannel.bindQueue(qok.queue, queue, '');
+        await startTestChannel.bindQueue(qok.queue, queue, '');
 
         const node = await this.nodesService.registerNode();
 
@@ -62,10 +65,14 @@ export class Server extends Context implements Server {
 
         await nodeReadyChannel.sendToQueue(this.nodeReadyQueue, new Buffer((JSON.stringify({ready: true}))));
 
-        await createJobChannel.consume(qok.queue, async () => {
-            const {successful, failed, dropped} = await this.testService.runTest();
+        await startTestChannel.consume(qok.queue, async (message: ConsumeMessage) => {
+            const parsed = JSON.parse((message).content.toString());
+
+            const {successful, failed, dropped} = await this.testService.runTest(parsed.scripts[this.scriptIndex]);
 
             await this.nodesService.saveTestResults(node.body, successful, failed, dropped);
+
+            await this.nodesService.sendTestCompleteMessage();
 
             await this.kubernetesService.shutdown();
         }, {noAck: true});
