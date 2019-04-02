@@ -20,8 +20,8 @@ export class TestService {
         const {sockets, successful, failed, dropped} = await this.startConnections(script);
 
         this.logger.info(`Total successful: ${successful}`);
-        this.logger.info(`Total successful: ${failed}`);
-        this.logger.info(`Total successful: ${dropped}`);
+        this.logger.info(`Total failed: ${failed}`);
+        this.logger.info(`Total dropped: ${dropped}`);
         this.logger.info('Shutting down sockets');
         await this.shutdownConnections(sockets);
 
