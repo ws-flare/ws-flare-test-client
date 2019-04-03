@@ -14,7 +14,7 @@ export class TestService {
 
     async runTest(script: Script): Promise<{ successful: number, failed: number, dropped: number }> {
         this.logger.info('Waiting for start timeout');
-        await this.waitForTimeout(script.start);
+        await this.waitForTimeout(script.start * 1000);
 
         this.logger.info('Running test');
         const {sockets, successful, failed, dropped} = await this.startConnections(script);
@@ -30,14 +30,14 @@ export class TestService {
         return {successful, failed, dropped};
     }
 
-    private async startConnections(script: Script):
+    private startConnections(script: Script):
         Promise<{ sockets: WebSocket[], successful: number, failed: number, dropped: number }> {
 
         let successful = 0;
         let failed = 0;
         let dropped = 0;
 
-        return await new Promise((resolve) => {
+        return new Promise((resolve) => {
 
             this.logger.info(`Simulating ${script.totalSimulators} users`);
 
@@ -60,7 +60,13 @@ export class TestService {
             }, (err, sockets: WebSocket[]) => {
                 this.logger.info('All sockets have connected');
                 this.logger.info(`Waiting for ${script.timeout} seconds`);
-                this.waitForTimeout(script.timeout).then(() => resolve({sockets, successful, failed, dropped}));
+
+                this.waitForTimeout(script.timeout * 1000).then(() => resolve({
+                    sockets,
+                    successful,
+                    failed,
+                    dropped
+                }));
             });
         });
     }
@@ -76,7 +82,7 @@ export class TestService {
         });
     }
 
-    private async waitForTimeout(timeout: number) {
-        await new Promise(resolve => setTimeout(() => resolve(), timeout))
+    private waitForTimeout(timeout: number) {
+        return new Promise(resolve => setTimeout(resolve, timeout));
     }
 }

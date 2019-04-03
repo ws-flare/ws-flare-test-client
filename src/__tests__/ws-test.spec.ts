@@ -75,7 +75,7 @@ describe('Orchestration', () => {
         expect(registerInterceptor.isDone()).to.eql(true);
     });
 
-    it('should stress test websocket server', async () => {
+    it.only('should stress test websocket server', async () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
         let nodeReady = false;
@@ -111,7 +111,7 @@ describe('Orchestration', () => {
                     target: 'ws://localhost:9001',
                     start: 0,
                     totalSimulators: 1000,
-                    timeout: 1
+                    timeout: 0
                 }
             ],
         }))));
