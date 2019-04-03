@@ -1,7 +1,7 @@
 import { ApplicationConfig } from '@loopback/core';
 import { OrchestrationApplication } from './application';
 
-const {PORT, USER_API, PROJECTS_API, JOBS_API, AMQP_URL, AMQP_PORT, AMQP_USER, AMQP_PWD, JOB_ID, NODE_ID, NODE_NAME, SCRIPT_INDEX} = process.env;
+const {PORT, USER_API, PROJECTS_API, JOBS_API, AMQP_URL, AMQP_PORT, AMQP_USER, AMQP_PWD, JOB_ID, NODE_ID, NODE_NAME, TOTAL_SIMULATORS, SCRIPT_INDEX} = process.env;
 
 export async function main(options: ApplicationConfig = {}): Promise<OrchestrationApplication> {
     options.port = options.port || PORT;
@@ -9,6 +9,7 @@ export async function main(options: ApplicationConfig = {}): Promise<Orchestrati
         jobId: JOB_ID,
         name: NODE_NAME,
         nodeId: NODE_ID,
+        totalSimulators: TOTAL_SIMULATORS,
         scriptIndex: SCRIPT_INDEX
     };
     options.apis = {

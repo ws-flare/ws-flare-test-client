@@ -31,6 +31,7 @@ export class OrchestrationApplication extends Application {
         this.bind('config.job.id').to(options.config.jobId);
         this.bind('config.name').to(options.config.name);
         this.bind('config.nodeId').to(options.config.nodeId);
+        this.bind('config.totalSimulators').to(options.config.totalSimulators);
         this.bind('config.scriptIndex').to(options.config.scriptIndex);
 
         // Remote APIS

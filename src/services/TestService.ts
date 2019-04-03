@@ -12,6 +12,9 @@ export class TestService {
     @inject('services.websocket')
     private websocketService: WebsocketService;
 
+    @inject('config.totalSimulators')
+    private totalSimulators: number;
+
     async runTest(script: Script): Promise<{ successful: number, failed: number, dropped: number }> {
         this.logger.info('Waiting for start timeout');
         await this.waitForTimeout(script.start * 1000);
@@ -39,9 +42,9 @@ export class TestService {
 
         return new Promise((resolve) => {
 
-            this.logger.info(`Simulating ${script.totalSimulators} users`);
+            this.logger.info(`Simulating ${this.totalSimulators} users`);
 
-            timesLimit(script.totalSimulators, 50, (n, next) => {
+            timesLimit(this.totalSimulators, 50, (n, next) => {
                 this.websocketService.createConnection(script)
                     .then((ws: any) => {
                         successful += 1;
