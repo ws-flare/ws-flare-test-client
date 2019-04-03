@@ -75,7 +75,7 @@ describe('Orchestration', () => {
         expect(registerInterceptor.isDone()).to.eql(true);
     });
 
-    it.only('should stress test websocket server', async () => {
+    it('should stress test websocket server', async () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
         let nodeReady = false;
