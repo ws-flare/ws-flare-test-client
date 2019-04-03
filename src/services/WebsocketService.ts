@@ -5,7 +5,7 @@ export class WebsocketService {
 
     async createConnection(script: Script) {
         return new Promise((resolve, reject) => {
-            const ws = new WebSocket(script.target);
+            const ws = new WebSocket(script.target, {handshakeTimeout: 5000});
 
             ws.on('open', () => {
                 resolve(ws);
