@@ -28,11 +28,11 @@ describe('WS', () => {
             .intercept('/nodes', 'POST')
             .reply(200, {id: 'node1'});
 
-        registerInterceptor = nock(apis.jobsApi)
+        nock(apis.jobsApi)
             .intercept('/sockets', 'POST')
             .reply(200, {id: 'abc123'});
 
-        registerInterceptor = nock(apis.jobsApi)
+        nock(apis.jobsApi)
             .intercept('/sockets', 'PUT')
             .reply(200, {id: 'abc123'});
 
