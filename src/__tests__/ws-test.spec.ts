@@ -28,14 +28,6 @@ describe('WS', () => {
             .intercept('/nodes', 'POST')
             .reply(200, {id: 'node1'});
 
-        nock(apis.jobsApi)
-            .intercept('/sockets', 'POST')
-            .reply(200, {id: 'abc123'});
-
-        nock(apis.jobsApi)
-            .intercept('/sockets', 'PUT')
-            .reply(200, {id: 'abc123'});
-
         saveTestResults = nock(apis.jobsApi)
             .intercept('/nodes/node1', 'PATCH', {
                 id: 'node1',
@@ -88,6 +80,16 @@ describe('WS', () => {
         let totalDisconnections = 0;
         let nodeReady = false;
         let nodeComplete = false;
+
+        nock(apis.jobsApi)
+            .post('/sockets')
+            .times(2000)
+            .reply(200, {id: 'abc123'});
+
+        nock(apis.jobsApi)
+            .put('/sockets/abc123')
+            .times(2000)
+            .reply(200, {id: 'abc123'});
 
         wsServer.on('connection', (ws) => {
             totalConnections += 1;

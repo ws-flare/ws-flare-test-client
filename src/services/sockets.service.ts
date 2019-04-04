@@ -1,21 +1,39 @@
 import { inject } from '@loopback/core';
 import { post, put } from 'superagent';
 import { Socket } from '../models/socket.model';
+import { Logger } from 'winston';
 
 export class SocketsService {
+
+    @inject('logger')
+    private logger: Logger;
 
     @inject('api.jobs')
     private jobsApi: string;
 
     async createSocket(socket: Socket): Promise<Socket> {
-        let res = await post(`${this.jobsApi}/sockets`).send(socket);
+        try {
+            this.logger.info('Creating socket');
+            let res = await post(`${this.jobsApi}/sockets`).send(socket);
 
-        return res.body;
+            this.logger.info(res.body);
+            return res.body;
+        } catch (error) {
+            this.logger.error(error);
+            return socket;
+        }
     }
 
     async updateSocket(socket: Socket) {
-        let res = await put(`${this.jobsApi}/sockets`).send(socket);
+        try {
+            this.logger.info('Creating socket');
+            let res = await put(`${this.jobsApi}/sockets/${socket.id}`).send(socket);
 
-        return res.body;
+            this.logger.info(res.body);
+            return res.body;
+        } catch (error) {
+            this.logger.error(error);
+            return socket;
+        }
     }
 }
