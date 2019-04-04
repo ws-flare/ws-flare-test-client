@@ -13,10 +13,10 @@ export class SocketsService {
 
     async createSocket(socket: Socket): Promise<Socket> {
         try {
-            this.logger.info('Creating socket');
+            this.logger.debug('Creating socket');
             let res = await post(`${this.jobsApi}/sockets`).send(socket);
 
-            this.logger.info(res.body);
+            this.logger.debug(res.body);
             return res.body;
         } catch (error) {
             this.logger.error(error);
@@ -26,10 +26,10 @@ export class SocketsService {
 
     async updateSocket(socket: Socket) {
         try {
-            this.logger.info('Creating socket');
+            this.logger.debug('Creating socket');
             let res = await put(`${this.jobsApi}/sockets/${socket.id}`).send(socket);
 
-            this.logger.info(res.body);
+            this.logger.debug(res.body);
             return res.body;
         } catch (error) {
             this.logger.error(error);
