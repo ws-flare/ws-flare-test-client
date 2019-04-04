@@ -6,7 +6,7 @@ import * as WebSocket from 'ws';
 import { OrchestrationApplication } from '../application';
 import { main } from '..';
 
-describe('Orchestration', () => {
+describe('WS', () => {
 
     const startTestQueue = 'job.start.job1';
     const nodeReadyQueue = 'node.ready.node1';
@@ -27,6 +27,14 @@ describe('Orchestration', () => {
         registerInterceptor = nock(apis.jobsApi)
             .intercept('/nodes', 'POST')
             .reply(200, {id: 'node1'});
+
+        registerInterceptor = nock(apis.jobsApi)
+            .intercept('/sockets', 'POST')
+            .reply(200, {id: 'abc123'});
+
+        registerInterceptor = nock(apis.jobsApi)
+            .intercept('/sockets', 'PUT')
+            .reply(200, {id: 'abc123'});
 
         saveTestResults = nock(apis.jobsApi)
             .intercept('/nodes/node1', 'PATCH', {

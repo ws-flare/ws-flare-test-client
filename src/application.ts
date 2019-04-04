@@ -7,6 +7,7 @@ import { WebsocketService } from './services/WebsocketService';
 import { TestService } from './services/TestService';
 import { createLogger, transports } from 'winston';
 import { KubernetesService } from './services/KubernetesService';
+import { SocketsService } from './services/sockets.service';
 
 export class OrchestrationApplication extends Application {
 
@@ -61,6 +62,7 @@ export class OrchestrationApplication extends Application {
         this.bind('services.websocket').toClass(WebsocketService);
         this.bind('services.test').toClass(TestService);
         this.bind('services.kubernetes').toClass(KubernetesService);
+        this.bind('services.sockets').toClass(SocketsService);
 
         // Kubernetes
         this.bind('kubernetes.client').to(new Client1_10({config: config.getInCluster()}));
