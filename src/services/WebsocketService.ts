@@ -21,17 +21,17 @@ export class WebsocketService {
             const ws = new WebSocket(script.target, {handshakeTimeout: 5000});
 
             ws.on('open', async () => {
-                socket = await this.open(socket);
+                socket = {...socket, ...await this.open(socket)};
                 resolve(ws);
             });
 
             ws.on('error', async (err) => {
-                socket = await this.error(socket);
+                socket = {...socket, ...await this.error(socket)};
                 reject(err)
             });
 
             ws.on('close', async () => {
-                socket = await this.close(socket)
+                socket = {...socket, ...await this.close(socket)}
             });
         });
     }
