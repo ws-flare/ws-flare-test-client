@@ -1,5 +1,5 @@
 import {inject} from '@loopback/core';
-import {post, put} from 'superagent';
+import {post, patch} from 'superagent';
 import {Socket} from '../models/socket.model';
 import {Logger} from 'winston';
 
@@ -27,7 +27,7 @@ export class SocketsService {
     async updateSocket(socket: Socket) {
         try {
             this.logger.debug('Updating socket');
-            let res = await put(`${this.jobsApi}/sockets/${socket.id}`).send(socket);
+            let res = await patch(`${this.jobsApi}/sockets/${socket.id}`).send(socket);
 
             this.logger.debug(res.body);
             return res.body;

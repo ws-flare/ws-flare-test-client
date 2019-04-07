@@ -25,17 +25,17 @@ export class WebsocketService {
             const ws = new WebSocket(script.target, {handshakeTimeout: 5000});
 
             ws.on('open', async () => {
-                socket = {...socket, ...await this.open(socket)};
+                await this.open(socket);
                 resolve(ws);
             });
 
             ws.on('error', async (err) => {
-                socket = {...socket, ...await this.error(socket)};
+                await this.error(socket);
                 reject(err);
             });
 
             ws.on('close', async () => {
-                socket = {...socket, ...await this.close(socket)}
+                await this.close(socket);
             });
         });
     }
@@ -51,8 +51,7 @@ export class WebsocketService {
     }
 
     private async close(socket: Socket) {
-        this.logger.info('Closing websocket now');
-        this.logger.info({...socket, disconnectTime: new Date(), disconnected: true});
+        this.logger.debug('Closing websocket now');
         return await this.socketsService.updateSocket({...socket, disconnectTime: new Date(), disconnected: true});
     }
 }

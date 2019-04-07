@@ -75,7 +75,7 @@ describe('WS', () => {
         expect(registerInterceptor.isDone()).to.eql(true);
     });
 
-    it.only('should stress test websocket server', async () => {
+    it('should stress test websocket server', async () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
         let nodeReady = false;
@@ -87,7 +87,7 @@ describe('WS', () => {
             .reply(200, {id: 'abc123'});
 
         nock(apis.jobsApi)
-            .put('/sockets/abc123')
+            .patch('/sockets/abc123')
             .times(2000)
             .reply(200, {id: 'abc123'});
 
