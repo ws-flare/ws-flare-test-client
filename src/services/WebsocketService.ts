@@ -1,9 +1,9 @@
-import { inject } from '@loopback/core';
+import {inject} from '@loopback/core';
 import * as WebSocket from 'ws';
-import { Script } from '../models/script.model';
-import { SocketsService } from './sockets.service';
+import {Script} from '../models/script.model';
+import {SocketsService} from './sockets.service';
 import * as uuid from 'uuid/v4';
-import { Socket } from '../models/socket.model';
+import {Socket} from '../models/socket.model';
 
 export class WebsocketService {
 
@@ -15,34 +15,36 @@ export class WebsocketService {
 
     async createConnection(script: Script) {
 
-        const socket = await this.socketsService.createSocket({id: uuid(), jobId: this.jobId});
+        let socket = await this.socketsService.createSocket({id: uuid(), jobId: this.jobId});
 
         return new Promise((resolve, reject) => {
             const ws = new WebSocket(script.target, {handshakeTimeout: 5000});
 
             ws.on('open', async () => {
-                await this.open(socket);
+                socket = await this.open(socket);
                 resolve(ws);
             });
 
             ws.on('error', async (err) => {
-                await this.error(socket);
+                socket = await this.error(socket);
                 reject(err)
             });
 
-            ws.on('close', () => this.close(socket));
+            ws.on('close', async () => {
+                socket = await this.close(socket)
+            });
         });
     }
 
     private async open(socket: Socket) {
-        await this.socketsService.updateSocket({...socket, connected: true, connectionTime: new Date()});
+        return await this.socketsService.updateSocket({...socket, connected: true, connectionTime: new Date()});
     }
 
     private async error(socket: Socket) {
-        await this.socketsService.updateSocket({...socket, hasError: true, errorTime: new Date()});
+        return await this.socketsService.updateSocket({...socket, hasError: true, errorTime: new Date()});
     }
 
     private async close(socket: Socket) {
-        await this.socketsService.updateSocket({...socket, disconnectTime: new Date()});
+        return await this.socketsService.updateSocket({...socket, disconnectTime: new Date()});
     }
 }
