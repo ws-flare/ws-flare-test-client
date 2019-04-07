@@ -4,8 +4,12 @@ import {Script} from '../models/script.model';
 import {SocketsService} from './sockets.service';
 import * as uuid from 'uuid/v4';
 import {Socket} from '../models/socket.model';
+import {Logger} from 'winston';
 
 export class WebsocketService {
+
+    @inject('logger')
+    private logger: Logger;
 
     @inject('services.sockets')
     private socketsService: SocketsService;
@@ -27,7 +31,7 @@ export class WebsocketService {
 
             ws.on('error', async (err) => {
                 socket = {...socket, ...await this.error(socket)};
-                reject(err)
+                reject(err);
             });
 
             ws.on('close', async () => {
@@ -37,14 +41,18 @@ export class WebsocketService {
     }
 
     private async open(socket: Socket) {
+        this.logger.debug('Opened websocket');
         return await this.socketsService.updateSocket({...socket, connected: true, connectionTime: new Date()});
     }
 
     private async error(socket: Socket) {
+        this.logger.debug('Websocket has error');
         return await this.socketsService.updateSocket({...socket, hasError: true, errorTime: new Date()});
     }
 
     private async close(socket: Socket) {
-        return await this.socketsService.updateSocket({...socket, disconnectTime: new Date()});
+        this.logger.info('Closing websocket now');
+        this.logger.info({...socket, disconnectTime: new Date(), disconnected: true});
+        return await this.socketsService.updateSocket({...socket, disconnectTime: new Date(), disconnected: true});
     }
 }

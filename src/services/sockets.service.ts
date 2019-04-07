@@ -1,7 +1,7 @@
-import { inject } from '@loopback/core';
-import { post, put } from 'superagent';
-import { Socket } from '../models/socket.model';
-import { Logger } from 'winston';
+import {inject} from '@loopback/core';
+import {post, put} from 'superagent';
+import {Socket} from '../models/socket.model';
+import {Logger} from 'winston';
 
 export class SocketsService {
 
@@ -26,7 +26,7 @@ export class SocketsService {
 
     async updateSocket(socket: Socket) {
         try {
-            this.logger.debug('Creating socket');
+            this.logger.debug('Updating socket');
             let res = await put(`${this.jobsApi}/sockets/${socket.id}`).send(socket);
 
             this.logger.debug(res.body);

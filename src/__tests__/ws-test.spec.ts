@@ -1,10 +1,10 @@
-import { Channel } from 'amqplib';
-import { apis, Container, getAMQPConn, getWsServer, setupK8sConfig, startMqContainer } from './test-helpers';
+import {Channel} from 'amqplib';
+import {apis, Container, getAMQPConn, getWsServer, setupK8sConfig, startMqContainer} from './test-helpers';
 import * as nock from 'nock';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import * as WebSocket from 'ws';
-import { OrchestrationApplication } from '../application';
-import { main } from '..';
+import {OrchestrationApplication} from '../application';
+import {main} from '..';
 
 describe('WS', () => {
 
@@ -75,7 +75,7 @@ describe('WS', () => {
         expect(registerInterceptor.isDone()).to.eql(true);
     });
 
-    it('should stress test websocket server', async () => {
+    it.only('should stress test websocket server', async () => {
         let totalConnections = 0;
         let totalDisconnections = 0;
         let nodeReady = false;
