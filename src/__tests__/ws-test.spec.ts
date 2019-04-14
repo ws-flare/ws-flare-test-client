@@ -1,10 +1,10 @@
-import {Channel} from 'amqplib';
-import {apis, Container, getAMQPConn, getWsServer, setupK8sConfig, startMqContainer} from './test-helpers';
+import { Channel } from 'amqplib';
+import { apis, Container, getAMQPConn, getWsServer, restoreFS, setupK8sConfig, startMqContainer } from './test-helpers';
 import * as nock from 'nock';
-import {expect} from 'chai';
+import { expect } from 'chai';
 import * as WebSocket from 'ws';
-import {OrchestrationApplication} from '../application';
-import {main} from '..';
+import { OrchestrationApplication } from '../application';
+import { main } from '..';
 
 describe('WS', () => {
 
@@ -69,6 +69,7 @@ describe('WS', () => {
         nock.cleanAll();
         nock.restore();
         nock.activate();
+        restoreFS();
     });
 
     it('should register node with the jobs api', async () => {
