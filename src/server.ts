@@ -6,6 +6,9 @@ import { TestService } from './services/TestService';
 import { Logger } from 'winston';
 import { KubernetesService } from './services/KubernetesService';
 
+/**
+ * Starts this service
+ */
 export class Server extends Context implements Server {
     private _listening: boolean = false;
 
@@ -44,6 +47,9 @@ export class Server extends Context implements Server {
         return this._listening;
     }
 
+    /**
+     * Start the test
+     */
     async start(): Promise<void> {
         const startTestChannel = await this.amqpConn.createChannel();
         const nodeReadyChannel = await this.amqpConn.createChannel();
@@ -56,6 +62,7 @@ export class Server extends Context implements Server {
 
         await startTestChannel.bindQueue(qok.queue, queue, '');
 
+        // Register node
         const node = await this.nodesService.registerNode();
 
         await nodeReadyChannel.assertQueue(this.nodeReadyQueue);
@@ -65,6 +72,7 @@ export class Server extends Context implements Server {
 
         await nodeReadyChannel.sendToQueue(this.nodeReadyQueue, new Buffer((JSON.stringify({ready: true}))));
 
+        // Wait for all nodes to be started then begin the test
         await startTestChannel.consume(qok.queue, async (message: ConsumeMessage) => {
             const parsed = JSON.parse((message).content.toString());
 
@@ -78,6 +86,9 @@ export class Server extends Context implements Server {
         }, {noAck: true});
     }
 
+    /**
+     * Stops the server
+     */
     async stop(): Promise<void> {
         await this.amqpConn.close();
     }

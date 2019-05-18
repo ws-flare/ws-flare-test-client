@@ -1,8 +1,14 @@
 import { ApplicationConfig } from '@loopback/core';
 import { OrchestrationApplication } from './application';
 
+// Get required data from environment variables to run this service
 const {PORT, USER_API, PROJECTS_API, JOBS_API, AMQP_URL, AMQP_PORT, AMQP_USER, AMQP_PWD, JOB_ID, NODE_ID, NODE_NAME, TOTAL_SIMULATORS, SCRIPT_INDEX} = process.env;
 
+/**
+ * Main entry point for starting this service
+ *
+ * @param options - Server configuration
+ */
 export async function main(options: ApplicationConfig = {}): Promise<OrchestrationApplication> {
     options.port = options.port || PORT;
     options.config = {

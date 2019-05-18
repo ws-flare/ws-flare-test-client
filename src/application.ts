@@ -9,6 +9,9 @@ import { createLogger, transports } from 'winston';
 import { KubernetesService } from './services/KubernetesService';
 import { SocketsService } from './services/sockets.service';
 
+/**
+ * Bootstraps the loopback service and sets up dependency injection
+ */
 export class OrchestrationApplication extends Application {
 
     constructor(options: ApplicationConfig = {}) {

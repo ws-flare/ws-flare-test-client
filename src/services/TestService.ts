@@ -4,6 +4,9 @@ import { Logger } from 'winston';
 import { timesLimit } from 'async';
 import { Script } from '../models/script.model';
 
+/**
+ * Service for running tests against a web socket server
+ */
 export class TestService {
 
     @inject('logger')
@@ -15,6 +18,11 @@ export class TestService {
     @inject('config.totalSimulators')
     private totalSimulators: number;
 
+    /**
+     * Runs the test
+     *
+     * @param script - The script to run
+     */
     async runTest(script: Script): Promise<{ successful: number, failed: number, dropped: number }> {
         this.logger.info('Waiting for start timeout');
         await this.waitForTimeout(script.start * 1000);
@@ -33,6 +41,11 @@ export class TestService {
         return {successful, failed, dropped};
     }
 
+    /**
+     * Attempts to connect to the web socket server. Successful, unsuccessful and dropped connections are recorded
+     *
+     * @param script - The script to run
+     */
     private startConnections(script: Script):
         Promise<{ sockets: WebSocket[], successful: number, failed: number, dropped: number }> {
 
@@ -44,6 +57,7 @@ export class TestService {
 
             this.logger.info(`Simulating ${this.totalSimulators} users`);
 
+            // Attempt to connect 50 web socket connections at a time
             timesLimit(this.totalSimulators, 50, (n, next) => {
                 this.websocketService.createConnection(script)
                     .then((ws: any) => {
@@ -64,6 +78,7 @@ export class TestService {
                 this.logger.info('All sockets have connected');
                 this.logger.info(`Waiting for ${script.timeout} seconds`);
 
+                // Hold the connections open until the time runs out
                 this.waitForTimeout(script.timeout * 1000).then(() => resolve({
                     sockets,
                     successful,
@@ -74,6 +89,11 @@ export class TestService {
         });
     }
 
+    /**
+     * Shutdown all web socket connections once the test has completed
+     *
+     * @param webSockets - The list of open web sockets
+     */
     private async shutdownConnections(webSockets: WebSocket[]) {
         await new Promise((resolve) => {
             timesLimit(webSockets.length, 50, (n, next) => {
@@ -85,6 +105,11 @@ export class TestService {
         });
     }
 
+    /**
+     * Wait for n seconds
+     *
+     * @param timeout - Total time to wait
+     */
     private waitForTimeout(timeout: number) {
         return new Promise(resolve => setTimeout(resolve, timeout));
     }

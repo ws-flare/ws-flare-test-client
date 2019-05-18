@@ -6,6 +6,9 @@ import * as WebSocket from 'ws';
 import { OrchestrationApplication } from '../application';
 import { main } from '..';
 
+/**
+ * Tests for web socket functionality
+ */
 describe('WS', () => {
 
     const startTestQueue = 'job.start.job1';

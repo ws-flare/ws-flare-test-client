@@ -1,3 +1,6 @@
+/**
+ * Describes the attributes of a Socket model
+ */
 export interface Socket {
     id?: string;
     jobId: string;

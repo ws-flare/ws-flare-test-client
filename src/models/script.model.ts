@@ -1,3 +1,6 @@
+/**
+ * Describes the attributes of a Script model
+ */
 export interface Script {
     start: number; // Seconds
     timeout: number; // Seconds
