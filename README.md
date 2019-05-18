@@ -16,10 +16,10 @@ yarn install
 
 You need to have docker installed before running tests. 
 
-Before running tests make sure you have pulled the mysql docker image using the command below
+Before running tests make sure you have pulled the rabbitmq docker image using the command below
 
 ```
-docker pull mysql:5
+docker pull rabbitmq
 ```
 
 next run the following command to run the tests
